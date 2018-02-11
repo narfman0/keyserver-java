@@ -12,10 +12,10 @@ public class TCPClientHandler extends Thread{
 	private final DataOutputStream os;
 	private final AtomicLong key;
 
-	public TCPClientHandler(Socket s, DataInputStream is, DataOutputStream os, AtomicLong key) {
-		this.is = is;
-		this.os = os;
+	public TCPClientHandler(Socket s, AtomicLong key) throws IOException {
 		this.key = key;
+		is = new DataInputStream(s.getInputStream());
+		os = new DataOutputStream(s.getOutputStream());
 	}
 
 	@Override

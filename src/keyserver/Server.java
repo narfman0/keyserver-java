@@ -1,7 +1,5 @@
 package keyserver;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
@@ -54,9 +52,7 @@ public class Server {
 		ServerSocket socket = new ServerSocket(Settings.PORT);
 		while (true) {
 			Socket s = socket.accept();
-			DataInputStream is = new DataInputStream(s.getInputStream());
-			DataOutputStream os = new DataOutputStream(s.getOutputStream());
-			Thread t = new TCPClientHandler(s, is, os, key);
+			Thread t = new TCPClientHandler(s, key);
 			t.start();
 		}
 	}
