@@ -11,23 +11,39 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import keyserver.TCPClientHandler;
-import keyserver.Settings.ServerType;
 
 public class Server {
 	private static AtomicLong key = new AtomicLong();
 	
 	public static void main(String args[] ) throws Exception {
-		if(Settings.TYPE == ServerType.UDP)
+		switch(Settings.TYPE){
+		case UDP_MULTI:
+			runUDPMulti();
+			break;
+		case UDP:
 			runUDP();
-		else
+			break;
+		case TCP:
 			runTCP();
+			break;
+		}
+	}
+	
+	public static void runUDPMulti() throws Exception{
+		ExecutorService executor = Executors.newFixedThreadPool(Settings.SERVER_PORTS);
+		for(int i=0; i<Settings.SERVER_PORTS; i++){
+			int port = Settings.PORT + i;
+			System.out.println("UDP server binding port: " + port);
+			executor.execute(new UDPServer(port));
+		}
+		 while (!executor.isTerminated()){}
 	}
 	
 	public static void runUDP() throws Exception{
 		ExecutorService executor = Executors.newFixedThreadPool(16);
 		DatagramSocket socket = new DatagramSocket(Settings.PORT);
-		byte[] buffer = new byte[1];
 		while (true) {
+			byte[] buffer = new byte[1];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 			socket.receive(packet);
 			executor.execute(new UDPClientHandler(socket, packet, key));
