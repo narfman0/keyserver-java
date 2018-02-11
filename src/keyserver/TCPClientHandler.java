@@ -6,14 +6,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ClientHandler extends Thread{
-	private static final ExponentialMovingAverage ema = new ExponentialMovingAverage(.05);
-	private static long lastTime = 0;
+public class TCPClientHandler extends Thread{
+	private static final TimeMonitor monitor = new TimeMonitor();
 	private final DataInputStream is;
 	private final DataOutputStream os;
 	private final AtomicLong key;
 
-	public ClientHandler(Socket s, DataInputStream is, DataOutputStream os, AtomicLong key) {
+	public TCPClientHandler(Socket s, DataInputStream is, DataOutputStream os, AtomicLong key) {
 		this.is = is;
 		this.os = os;
 		this.key = key;
@@ -27,13 +26,7 @@ public class ClientHandler extends Thread{
 				long keyValue = key.getAndIncrement();
 				os.writeLong(keyValue);
 				os.flush();
-				if(keyValue % 100000 == 0){
-					long newTime = System.currentTimeMillis();
-					double diffSeconds = (newTime - lastTime) / 1000.0;
-					lastTime = newTime;
-					int emaValue = (int)ema.average(100000.0 / diffSeconds);
-					System.out.println("Created key: " + keyValue + " keys/second: " + emaValue);
-				}
+				monitor.update(keyValue);
 			} catch (IOException e) {
 				e.printStackTrace();
 				break;
